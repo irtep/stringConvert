@@ -2,7 +2,25 @@ const clickListener = document.getElementById('confirmButton').addEventListener(
 
 function convert(){
   const addGuild = document.getElementById('addGuild');
-  console.log(addGuild.value);
+  const splitted = addGuild.value.split('Level');
+  const allSkills = [];
+  
+  for (let i = 1; i < splitted.length; i++) { 
+    const newSkill = {
+      name: null,
+      requirements: [],
+      available: []
+    }
+    const levels = splitted[i].split('Requirements');
+    
+    for (let ii = 1; ii < levels.length; ii++) {
+      
+      console.log('levels: ', levels[ii]);
+      // okei, osaa nyt jo kattoa levelin kerrallaan... tästä on hyvä jatkaa
+    }
+  }
+  
+  //console.log(splitted);
 }
 // prints "hi" in the browser's dev tools console
 console.log("hi");
@@ -26,6 +44,18 @@ tän näköstä sitten pitäisi olla:
           , 253),
           
 eiköhän tää tästä...
+eli tarvittas oikeestaan:
+nimi, skill, spell, array jossa prossat
+
+const newSkill = {
+name: null,
+requirements: [],
+available: []
+}
+
+const requirements = [];
+const available = [];
+const 
 */
 
 
