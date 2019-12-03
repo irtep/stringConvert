@@ -1,5 +1,10 @@
 const clickListener = document.getElementById('confirmButton').addEventListener('click', convert);
 
+// copy variable as it was at the moment
+function freezeCopy(target){
+  return JSON.parse(JSON.stringify(target));
+}
+
 function makeEntry(str, toWhere) {
   let skillsPercent = null;
   let skillsName = null;
@@ -59,20 +64,17 @@ function makeEntry(str, toWhere) {
 function convert(){
   const addGuild = document.getElementById('addGuild');
   const splitted = addGuild.value.split('Level');
-  const requiredSkills = [];
-  const requiredSpells = [];
-  const availableSkills = [];
-  const availableSpells = [];
+  const required = [];
+  //const requiredSpells = [];
+  const available = [];
+  //const availableSpells = [];
+  const skills = [];
+  let currentLevel = 1;
   let shortName = 'short name';
   let longName = 'long name';
   
   // check all levels that are split by all levels
   for (let i = 1; i < splitted.length; i++) { 
-    const newSkill = {
-      name: null,
-      requirements: [],
-      available: []
-    }
     
     const levels = splitted[i].split('Requirements');
     
@@ -88,33 +90,38 @@ function convert(){
         const reqSpellTest = splitted2[iii].includes('Has studied');
         const avaSkillTest = splitted2[iii].includes('May train');
         const avaSpellTest = splitted2[iii].includes('May study');
-        
+        /*
+        0: SkillSpell {name: "Tree herding", skill: true, spell: false, levels: Array(3), cost: 398}
+        */
         if (reqSkillTest) { 
-          requiredSkills.push(splitted2[iii]); 
           const entry = makeEntry(splitted2[iii], 'requiredSkills');
-          console.log('entry ', entry);
+          required.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
           // needs still level number, its i or ii or something...need take the dog out now..
+          // ["Plant lore", 16, true, true] // is skill, req
         }
         if (reqSpellTest) { 
-          requiredSpells.push(splitted2[iii]); 
+          const entry = makeEntry(splitted2[iii], 'requiredSpells');
+          required.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
         }
         if (avaSkillTest) { 
-          availableSkills.push(splitted2[iii]); 
+          const entry = makeEntry(splitted2[iii], 'availableSkills');
+          available.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
         }
         if (avaSpellTest) { 
-          availableSpells.push(splitted2[iii]); 
+          const entry = makeEntry(splitted2[iii], 'availableSpells');
+          available.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
         }
       }
-      // okei, osaa laittaa spellit ja skillit oikeihin lokeroihin... tosin ei vielä sen mukaan minkä levelin ne on..
-      // se siitä sitten seuraavaksi.
     }
   }
-  //console.log('rsk ', requiredSkills);
-  //console.log('rsp ', requiredSpells);
-  //console.log('ask ', availableSkills);
-  //console.log('asp ', availableSpells);
+  console.log('available: ', available);
+  console.log('required: ', required);
+  // Noniin, tässä vaiheessa on available ja required jossa kaikki skillit ja spellit
   
-  //console.log(splitted);
+  // seuraavaksi käyään läpi ja lajitellaan:
+  // tehään uusi array molemmille, niihin pushataan ekat ja sitten se käydään läpi
+  // jos löytyy skilli ni sinne pushataan prossat jatkoksi samalla tarkistaa onko kaikki aiemmat, jos ei ni lisätään 0
+  // sit alkaa olla jo aika lähellä sitä mitä pitää olla...
 }
 // prints "hi" in the browser's dev tools console
 console.log("hi");
