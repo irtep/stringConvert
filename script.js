@@ -3,7 +3,12 @@ const clickListener = document.getElementById('confirmButton').addEventListener(
 function convert(){
   const addGuild = document.getElementById('addGuild');
   const splitted = addGuild.value.split('Level');
-  const allSkills = [];
+  const requiredSkills = [];
+  const requiredSpells = [];
+  const availableSkills = [];
+  const availableSpells = [];
+  let shortName = 'short name';
+  let longName = 'long name';
   
   for (let i = 1; i < splitted.length; i++) { 
     const newSkill = {
@@ -15,16 +20,39 @@ function convert(){
     
     for (let ii = 1; ii < levels.length; ii++) {
       
-      console.log('levels: ', levels[ii]);
-      // okei, osaa nyt jo kattoa levelin kerrallaan... tästä on hyvä jatkaa
+      const splitted2 = levels[ii].split('.');
+      //console.log('skills and spells: ', splitted2);
+      
+      for (let iii = 0; iii < splitted2.length; iii++) {
+        //console.log('split2 ', splitted2[iii]);
+        const reqSkillTest = splitted2[iii].includes('Has trained');
+        const reqSpellTest = splitted2[iii].includes('Has studied');
+        const avaSkillTest = splitted2[iii].includes('May train');
+        const avaSpellTest = splitted2[iii].includes('May study');
+        
+        if (reqSkillTest) { console.log('req skill'); requiredSkills.push(splitted2[iii]); }
+        if (reqSpellTest) { console.log('req spell'); requiredSpells.push(splitted2[iii]); }
+        if (avaSkillTest) { console.log('ava skill'); availableSkills.push(splitted2[iii]); }
+        if (avaSpellTest) { console.log('ava spell'); availableSpells.push(splitted2[iii]); }
+      }
+      // okei, osaa laittaa spellit ja skillit oikeihin lokeroihin... tosin ei vielä sen mukaan minkä levelin ne on..
+      // se siitä sitten seuraavaksi.
     }
   }
+  console.log('rsk ', requiredSkills);
+  //console.log('rsp ', requiredSpells);
+  //console.log('ask ', availableSkills);
+  //console.log('asp ', availableSpells);
   
   //console.log(splitted);
 }
 // prints "hi" in the browser's dev tools console
 console.log("hi");
+/*
 
+  var str = "Hello world, welcome to the universe.";
+  var n = str.includes("world");
+*/
 /*
 okei... näyttää tältä suoraan stringinä:
 Level 1 Requirements: Background must be Civilized. Available:  Receive a gift from the Guild of Alchemy May train Extract ether to 20. May train Plant lore to 20. May train Cast generic to 20. May train Attack to 10. May train Dissection to 10. May train Short blades to 10. May train Gutblade to 5. May train Make heatstick to 10. May train Mix juice to 20. May study Detect race to 10.   Level 2 Requirements: Has trained Plant lore to 16. Has trained Dissection to 8. Available: May train Extract ether to 40. May train Plant lore to 40. May train Cast generic to 40. May train Attack to 20. May train Dissection to 20. May train Long blades to 10. May train Short blades to 20. May train Gutblade to 10. May train Consider to 10. May train Make heatstick to 20. May train Mix juice to 30. May study Detect race to 20.
@@ -33,15 +61,13 @@ eli Level x kohdissa vaihtuu level... sitten tulee requirementsit...joka päätt
 kaikki aina päättyy pisteeseen..
 
 tän näköstä sitten pitäisi olla:
-        new SkillSpell('Consider', true, false, 
-          [10, 16, 23, 29, 36, 43, 49, 56, 63, 70] 
-          , 253),
-        new SkillSpell('Controlled panic', true, false, 
-          [10, 12, 14, 16, 18, 21, 23, 25, 27, 30] 
-          , 253),
-        new SkillSpell('Darkness', false, true, 
-          [10, 17, 24, 31, 38, 46, 53, 60, 67, 75] 
-          , 253),
+longName: "The Navigators of the Tree"
+mayTrain: Array(1)
+skillsAndSpells: Array(2)
+0: SkillSpell {name: "Tree herding", skill: true, spell: false, levels: Array(3), cost: 398}
+1: SkillSpell {name: "Travel", skill: false, spell: true, levels: Array(3), cost: 417}
+requirements: []
+shortName: "Treenav"
           
 eiköhän tää tästä...
 eli tarvittas oikeestaan:
