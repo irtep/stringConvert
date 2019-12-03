@@ -1,5 +1,61 @@
 const clickListener = document.getElementById('confirmButton').addEventListener('click', convert);
 
+function makeEntry(str, toWhere) {
+  let skillsPercent = null;
+  let skillsName = null;
+  let newStr = null;
+  let isSkill = false;
+  let requirement = false;
+  /*
+  0: ": Has trained Plant lore to 16"
+  */
+  /*
+  
+0: SkillSpell {name: "Tree herding", skill: true, spell: false, levels: Array(3), cost: 398}
+1: SkillSpell {name: "Travel", skill: false, spell: true, levels: Array(3), cost: 417}
+  */
+  switch (toWhere) {
+      
+    case 'requiredSkills':
+      newStr = str.replace(': ', '').replace('Has trained ', '').replace(' to ', '');
+      requirement = true;
+      isSkill = true;
+    break;
+    case 'requiredSpells':
+      newStr = str.replace(': ', '').replace('Has studied ', '').replace(' to ', '');
+      requirement = true;
+    break;
+    case 'availableSkills':
+      newStr = str.replace(': ', '').replace('May train ', '').replace(' to ', '');
+      isSkill = true;
+    break;
+    case 'availableSpells':
+      newStr = str.replace(': ', '').replace('May study ', '').replace(' to ', '');
+    break;
+  
+    default: console.log('not found toWhere');  
+  }
+  
+  const lastDig = Number.isInteger(parseInt(newStr[newStr.length-1]));
+  const secondLastDig = Number.isInteger(parseInt(newStr[newStr.length-2]));
+      
+  if (secondLastDig) { 
+    skillsPercent = newStr[newStr.length-2] + newStr[newStr.length-1];
+  } else { 
+    skillsPercent = newStr[newStr.length-1];
+  }
+        
+  newStr.length = newStr.length -2;
+  newStr = newStr.slice(0, -2);
+  skillsName= newStr;
+  
+  // make this from string to integer:
+  skillsPercent = parseInt(skillsPercent);
+  //console.log('skill percent: ', skillsPercent);
+  //console.log('skills name: ', skillsName);
+  return [skillsName, skillsPercent, isSkill, requirement];
+}
+
 function convert(){
   const addGuild = document.getElementById('addGuild');
   const splitted = addGuild.value.split('Level');
@@ -10,18 +66,21 @@ function convert(){
   let shortName = 'short name';
   let longName = 'long name';
   
+  // check all levels that are split by all levels
   for (let i = 1; i < splitted.length; i++) { 
     const newSkill = {
       name: null,
       requirements: [],
       available: []
     }
+    
     const levels = splitted[i].split('Requirements');
     
+    // check all levels
     for (let ii = 1; ii < levels.length; ii++) {
       
+      // now splitted by each skill and spell
       const splitted2 = levels[ii].split('.');
-      //console.log('skills and spells: ', splitted2);
       
       for (let iii = 0; iii < splitted2.length; iii++) {
         //console.log('split2 ', splitted2[iii]);
@@ -30,16 +89,27 @@ function convert(){
         const avaSkillTest = splitted2[iii].includes('May train');
         const avaSpellTest = splitted2[iii].includes('May study');
         
-        if (reqSkillTest) { console.log('req skill'); requiredSkills.push(splitted2[iii]); }
-        if (reqSpellTest) { console.log('req spell'); requiredSpells.push(splitted2[iii]); }
-        if (avaSkillTest) { console.log('ava skill'); availableSkills.push(splitted2[iii]); }
-        if (avaSpellTest) { console.log('ava spell'); availableSpells.push(splitted2[iii]); }
+        if (reqSkillTest) { 
+          requiredSkills.push(splitted2[iii]); 
+          const entry = makeEntry(splitted2[iii], 'requiredSkills');
+          console.log('entry ', entry);
+          // needs still level number, its i or ii or something...need take the dog out now..
+        }
+        if (reqSpellTest) { 
+          requiredSpells.push(splitted2[iii]); 
+        }
+        if (avaSkillTest) { 
+          availableSkills.push(splitted2[iii]); 
+        }
+        if (avaSpellTest) { 
+          availableSpells.push(splitted2[iii]); 
+        }
       }
       // okei, osaa laittaa spellit ja skillit oikeihin lokeroihin... tosin ei vielä sen mukaan minkä levelin ne on..
       // se siitä sitten seuraavaksi.
     }
   }
-  console.log('rsk ', requiredSkills);
+  //console.log('rsk ', requiredSkills);
   //console.log('rsp ', requiredSpells);
   //console.log('ask ', availableSkills);
   //console.log('asp ', availableSpells);
@@ -69,6 +139,10 @@ skillsAndSpells: Array(2)
 requirements: []
 shortName: "Treenav"
           
+nyt: 
+0: ": Has trained Plant lore to 16"
+1: " Has trained Dissection to 8"
+
 eiköhän tää tästä...
 eli tarvittas oikeestaan:
 nimi, skill, spell, array jossa prossat
