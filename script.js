@@ -20,7 +20,7 @@ function makeEntry(str, toWhere) {
 1: SkillSpell {name: "Travel", skill: false, spell: true, levels: Array(3), cost: 417}
   */
   switch (toWhere) {
-      
+    // remove extra parts and add info if skill or requirement  
     case 'requiredSkills':
       newStr = str.replace(': ', '').replace('Has trained ', '').replace(' to ', '');
       requirement = true;
@@ -31,33 +31,40 @@ function makeEntry(str, toWhere) {
       requirement = true;
     break;
     case 'availableSkills':
-      newStr = str.replace(': ', '').replace('May train ', '').replace(' to ', '');
+      newStr = str.replace(': ', '').replace('May train ', '').replace(' to ', '').replace('Available', '');
       isSkill = true;
     break;
     case 'availableSpells':
-      newStr = str.replace(': ', '').replace('May study ', '').replace(' to ', '');
+      newStr = str.replace(': ', '').replace('May study ', '').replace(' to ', '').replace('Available', '');
     break;
   
     default: console.log('not found toWhere');  
   }
   
+  // check if percent has three, two or one digits
   const lastDig = Number.isInteger(parseInt(newStr[newStr.length-1]));
   const secondLastDig = Number.isInteger(parseInt(newStr[newStr.length-2]));
+  const thirdLastDig = Number.isInteger(parseInt(newStr[newStr.length-3]));
       
-  if (secondLastDig) { 
-    skillsPercent = newStr[newStr.length-2] + newStr[newStr.length-1];
-  } else { 
-    skillsPercent = newStr[newStr.length-1];
+  // make skill percent variable and cut extra lines from string that says skill name
+  if (thirdLastDig) {
+    skillsPercent = newStr[newStr.length-3] + newStr[newStr.length-2] + newStr[newStr.length-1];
+    newStr = newStr.slice(0, -3);
+  } else {
+    if (secondLastDig) { 
+      skillsPercent = newStr[newStr.length-2] + newStr[newStr.length-1];
+      newStr = newStr.slice(0, -2);
+    } else { 
+      skillsPercent = newStr[newStr.length-1];
+      newStr = newStr.slice(0, -1);
+    }
   }
-        
-  newStr.length = newStr.length -2;
-  newStr = newStr.slice(0, -2);
-  skillsName= newStr;
+  // trim as they are some extra empty spaces sometimes.
+  skillsName= newStr.trim();
   
   // make this from string to integer:
   skillsPercent = parseInt(skillsPercent);
-  //console.log('skill percent: ', skillsPercent);
-  //console.log('skills name: ', skillsName);
+  
   return [skillsName, skillsPercent, isSkill, requirement];
 }
 
@@ -72,6 +79,13 @@ function convert(){
   let currentLevel = 1;
   let shortName = 'short name';
   let longName = 'long name';
+  // the new guild place holder
+  const newGuild = {
+    longName: 'longName',
+    shortName: 'shortName',
+    skillsAndSpells: [],
+    requirements: []
+  }
   
   // check all levels that are split by all levels
   for (let i = 1; i < splitted.length; i++) { 
@@ -85,7 +99,6 @@ function convert(){
       const splitted2 = levels[ii].split('.');
       
       for (let iii = 0; iii < splitted2.length; iii++) {
-        //console.log('split2 ', splitted2[iii]);
         const reqSkillTest = splitted2[iii].includes('Has trained');
         const reqSpellTest = splitted2[iii].includes('Has studied');
         const avaSkillTest = splitted2[iii].includes('May train');
@@ -103,12 +116,12 @@ function convert(){
           const entry = makeEntry(splitted2[iii], 'requiredSpells');
           required.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
         }
-        if (avaSkillTest) { 
-          const entry = makeEntry(splitted2[iii], 'availableSkills');
+        if (avaSkillTest) { // .split . pop part is to remove unwanted stuff before skills and spells
+          const entry = makeEntry(splitted2[iii].split('May train ').pop(), 'availableSkills');
           available.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
         }
         if (avaSpellTest) { 
-          const entry = makeEntry(splitted2[iii], 'availableSpells');
+          const entry = makeEntry(splitted2[iii].split('May study ').pop(), 'availableSpells');
           available.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
         }
       }
@@ -116,9 +129,111 @@ function convert(){
   }
   console.log('available: ', available);
   console.log('required: ', required);
-  // Noniin, tässä vaiheessa on available ja required jossa kaikki skillit ja spellit
+    
+  // sort available and required lists by level order
+  const skillsByLevel = available.slice(0);
+  skillsByLevel.sort((a,b) => {
+    return a.level - b.level;
+  });
+  const requiredByLevel = required.slice(0);
+  requiredByLevel.sort((a,b) => {
+    return a.level - b.level;
+  });
   
-  // seuraavaksi käyään läpi ja lajitellaan:
+  // lets start to fill the newGuild
+  // {name: "Tree herding", skill: true, spell: false, levels: Array(3), cost: 398}
+  /*
+  
+level: 2
+name: "Short blades"
+percent: 20
+skill: true
+  */
+  function addLevels(targetArray, level, percent) {
+    
+    // if first level
+    if (level === 1) {
+      
+      targetArray.push(percent);
+    } else {
+      
+      // first add zeros to fill empty levels
+      for (let i = 1; i < level; i++) {
+      
+        targetArray.push(0);
+      }
+      
+      // then add the percent
+      targetArray.push(percent);
+    }
+    
+    return targetArray;
+  }
+  
+  let tempFalse = false;
+  if (skillsByLevel[0].skill === false) { tempFalse = true; }
+  
+  newGuild.skillsAndSpells[0] = {
+    name: skillsByLevel[0].name,
+    skill: skillsByLevel[0].skill,
+    spell: tempFalse,
+    levels: [skillsByLevel[0].percent],
+    cost: null // this will be null as cost comes from elsewhere
+  }; 
+  
+  tempFalse = false;
+  if (requiredByLevel[0].skill === false) { tempFalse = true; }
+  
+  newGuild.requirements[0] = {
+    name: requiredByLevel[0].name,
+    skill: requiredByLevel[0].skill,
+    spell: tempFalse,
+    levels: [requiredByLevel[0].percent],
+    cost: null // this will be null as cost comes from elsewhere
+  }; 
+  
+  // filling rest of the skills and spells
+  for (let i = 1; i < skillsByLevel.length; i++) {
+    let dublicated = false;
+    const skillOnTurn = skillsByLevel[i];
+    
+    newGuild.skillsAndSpells.forEach( (skiSpe) => {
+      
+      if (skiSpe.name === skillOnTurn.name) {
+        dublicated = true;
+        // if next level, can push
+        if (skillOnTurn.level === skiSpe.levels.length + 1) {
+            skiSpe.levels.push(skillOnTurn.percent);
+        } else {
+          // if not next level...
+          let difference = skillOnTurn.level - (skiSpe.levels.length + 1);
+          
+          for (; difference > 1; difference--) {
+            skiSpe.levels.push(skiSpe.levels[skiSpe.levels.length-1])
+          }
+          skiSpe.levels.push(skillOnTurn.percent);
+        }
+      }
+    });
+    
+    // if didn't find same
+    if (dublicated) {
+      const newSkillSpell = {
+        name: skillOnTurn.name,
+        skill: skillOnTurn.skill,
+        spell: tempFalse,
+        levels: [],
+        cost: null // this will be null as cost comes from elsewhere
+      };
+      // add level percents
+      newSkillSpell.levels = addLevels(newSkillSpell.levels, skillOnTurn.level, skillOnTurn.percent); 
+    }
+  }
+  
+  for (let i = 1; i < requiredByLevel.length; i++) {
+    
+  }
+  console.log('newguild: ', newGuild);
   // tehään uusi array molemmille, niihin pushataan ekat ja sitten se käydään läpi
   // jos löytyy skilli ni sinne pushataan prossat jatkoksi samalla tarkistaa onko kaikki aiemmat, jos ei ni lisätään 0
   // sit alkaa olla jo aika lähellä sitä mitä pitää olla...
