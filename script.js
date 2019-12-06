@@ -173,16 +173,21 @@ function convert(){
   wroteAvailable.push(skillsByLevel[0].name);
   
   tempFalse = false;
-  if (requiredByLevel[0].skill === false) { tempFalse = true; }
   
-  newGuild.requirements[0] = {
-    name: requiredByLevel[0].name,
-    skill: requiredByLevel[0].skill,
-    spell: tempFalse,
-    levels: [requiredByLevel[0].percent],
-    cost: null // this will be null as cost comes from elsewhere
-  }; 
-  wroteRequired.push(requiredByLevel[0].name);
+  // if guild has requirements
+  if (requiredByLevel[0] !== undefined) {
+    
+    if (requiredByLevel[0].skill === false) { tempFalse = true; }
+
+    newGuild.requirements[0] = {
+      name: requiredByLevel[0].name,
+      skill: requiredByLevel[0].skill,
+      spell: tempFalse,
+      levels: [requiredByLevel[0].percent],
+      cost: null // this will be null as cost comes from elsewhere
+    }; 
+    wroteRequired.push(requiredByLevel[0].name);  
+  } 
   
   // filling rest of the skills and spells
   skillsByLevel.forEach( (skill) => {
