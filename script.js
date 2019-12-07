@@ -8,7 +8,7 @@ function freezeCopy(target){
 function makeEntry(str, toWhere) {
   let skillsPercent = null;
   let skillsName = null;
-  let newStr = null;
+  let newStr = str.replace(/Requirements/);
   let isSkill = false;
   let requirement = false;
   
@@ -111,27 +111,28 @@ function convert(){
   // check all levels that are split by all levels
   for (let i = 1; i < splitted.length; i++) { 
     
-    const levels = splitted[i].split('Requirements');
-    
-    // check all levels
-    for (let ii = 1; ii < levels.length; ii++) {
+      // split by . as then skill/spell changes
+      let splitted2 = splitted[i].split('.');
       
-      // now splitted by each skill and spell
-      const splitted2 = levels[ii].split('.');
-      
-      for (let iii = 0; iii < splitted2.length; iii++) {
+      // take one by one alls kills
+      for (let iii = 1; iii < splitted2.length; iii++) {
+        
+        // this takes away the level number
+        if (parseInt(splitted2[iii][1]) === NaN) {
+          splitted2[iii].slice(1);
+        } else {
+          splitted2[iii].slice(1);
+          splitted2[iii].slice(1);
+        }
+        
         const reqSkillTest = splitted2[iii].includes('Has trained');
         const reqSpellTest = splitted2[iii].includes('Has studied');
         const avaSkillTest = splitted2[iii].includes('May train');
         const avaSpellTest = splitted2[iii].includes('May study');
-        /*
-        0: SkillSpell {name: "Tree herding", skill: true, spell: false, levels: Array(3), cost: 398}
-        */
+        
         if (reqSkillTest) { 
           const entry = makeEntry(splitted2[iii], 'requiredSkills');
           required.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
-          // needs still level number, its i or ii or something...need take the dog out now..
-          // ["Plant lore", 16, true, true] // is skill, req
         }
         if (reqSpellTest) { 
           const entry = makeEntry(splitted2[iii], 'requiredSpells');
@@ -146,7 +147,7 @@ function convert(){
           available.push({name: entry[0], level: i, percent: entry[1], skill: entry[2]});
         }
       }
-    }
+   // }
   }
     
   // sort available and required lists by level order
@@ -352,6 +353,7 @@ function convert(){
   
   // add result:
   document.getElementById('result').innerHTML = 'guild packet copied to clipboard!'
+  console.log('gp ,', guildPacked);
 }
 // prints "hi" in the browser's dev tools console
 console.log("hi");
